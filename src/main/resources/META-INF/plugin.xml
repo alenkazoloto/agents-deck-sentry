@@ -1,0 +1,45 @@
+<idea-plugin>
+    <id>dev.agentsdeck.sentry</id>
+    <name>Agents Deck: Sentry</name>
+    <vendor url="https://github.com/alenkazoloto">Agents Deck</vendor>
+    <description><![CDATA[
+        <p>Puts your <b>Sentry</b> issues behind the <code>#</code> completion in
+        <b>Agents Deck</b> — with the crash's stack trace already in the prompt.</p>
+        <ul>
+        <li><b><code>#</code> in chat</b> — search your organization's issues, or type a short
+        id like <code>BACKEND-1A2B</code> outright; the title, the culprit and the latest
+        event's top frames travel with the prompt, so the agent starts from the stack trace
+        rather than from a link.</li>
+        <li><b>Links in agent output</b> — <code>BACKEND-1A2B</code> opens the issue, for the
+        projects your organization actually has.</li>
+        <li><b>Settings › Connections › Integrations › Sentry</b> — which token is in force,
+        which organization it belongs to, and what to set when there is none.</li>
+        </ul>
+        <p>Authentication is a Sentry <b>auth token</b> read from <code>SENTRY_AUTH_TOKEN</code>
+        in your environment, or from the <code>env</code> block of a configured stdio MCP
+        server — the same name <code>sentry-cli</code> reads, along with the optional
+        <code>SENTRY_ORG</code> and <code>SENTRY_URL</code>. No browser sign-in, and nothing is
+        stored by this plugin. With no token set, it contributes nothing at all — the chat is
+        exactly the chat Agents Deck ships.</p>
+    ]]></description>
+
+    <depends>com.intellij.modules.platform</depends>
+
+    <!-- Not optional: without the host there are no extension points to contribute to and no
+         `com.github.claudeagents.api` on the classpath. Named by the host's plugin *alias*
+         rather than by either edition's <id>, which is what makes this one build load beside
+         the full edition and beside the free one (EXTENDING.md). -->
+    <depends>dev.agentsdeck.api</depends>
+
+    <extensions defaultExtensionNs="com.intellij">
+        <postStartupActivity implementation="dev.agentsdeck.sentry.SentryStartup"/>
+    </extensions>
+
+    <!-- The host's extension points are auto-prefixed with its plugin id, so the namespace is
+         the id and the point is its bare name. -->
+    <extensions defaultExtensionNs="dev.agentsdeck.jetbrains">
+        <issueProvider implementation="dev.agentsdeck.sentry.SentryProviderFactory"/>
+        <transcriptLinker implementation="dev.agentsdeck.sentry.SentryLinkContributor"/>
+        <settingsSection implementation="dev.agentsdeck.sentry.SentrySettingsSection"/>
+    </extensions>
+</idea-plugin>
